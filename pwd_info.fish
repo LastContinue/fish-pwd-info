@@ -7,13 +7,20 @@ function pwd_info -a separator -d "Print easy-to-parse information the current w
             sub(/^\/?.*\//, "", string)
             return string
         }
-        function dirs(string, printLastName,   prefix, path) {
+        function dir_abbr(dir) {
+            abbr = dir_length == 0 ? dir : substr(dir, 1, dir_length ? dir_length : 1)
+            # Just "." can happen depending on the value of `dir_length`
+            # This is not very informative, so add an additional character
+            name = abbr == "." ? substr(dir, 1, 2) : abbr
+            return name
+        }
+        function dirs(string, printLastName, prefix, path) {
             len = split(string, parts, "/")
             for (i = 1; i < len; i++) {
-                name = dir_length == 0 ? parts[i] : substr(parts[i], 1, dir_length ? dir_length : 1)
-                if (parts[i] == "" || name == ".") {
+                if (parts[i] == "") {
                     continue
                 }
+                name = dir_abbr(parts[i])
                 path = path prefix name
                 prefix = separator
             }
@@ -30,8 +37,7 @@ function pwd_info -a separator -d "Print easy-to-parse information the current w
             if (git_root == "") {
                 printf("%s\n%s\n%s\n",
                     $0 == home || $0 == "/" ? "" : base($0),
-                    dirs(remove(home, $0)),
-                    "")
+                    dirs(remove(home, $0)), "")
             } else {
                 printf("%s\n%s\n%s\n",
                     base(git_root),
